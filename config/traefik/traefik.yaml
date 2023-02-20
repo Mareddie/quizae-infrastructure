@@ -1,0 +1,32 @@
+api:
+    dashboard: true
+
+providers:
+    # Dynamic configuration
+    file:
+        filename: /etc/traefik/dynamic.yaml
+        watch: true
+
+    docker:
+        network: public
+        exposedByDefault: false
+        swarmMode: true
+
+entryPoints:
+    web:
+        address: :80
+        http:
+            redirections:
+                entryPoint:
+                    to: websecure
+                    scheme: https
+
+    websecure:
+        address: :443
+
+certificatesResolvers:
+    defaultResolver:
+        acme:
+            email: hey@martinmicka.me
+            storage: acme.json
+            tlsChallenge: {}

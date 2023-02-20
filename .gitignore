@@ -1,0 +1,7 @@
+.idea/
+.DS_Store/
+# Certificate Resolver Storage - should be created manually on server
+config/traefik/acme.json
+# Custom file with users for basic auth
+config/traefik/basicAuthUsers
+.env

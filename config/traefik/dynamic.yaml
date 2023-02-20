@@ -1,0 +1,6 @@
+http:
+    middlewares:
+        testing-auth:
+            basicAuth:
+                usersFile: /run/secrets/basicAuthUsers
+                removeHeader: true
