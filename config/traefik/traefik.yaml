@@ -25,7 +25,7 @@ entryPoints:
         address: :443
 
 certificatesResolvers:
-    defaultResolver:
+    default-resolver:
         acme:
             email: hey@martinmicka.me
             storage: acme.json
