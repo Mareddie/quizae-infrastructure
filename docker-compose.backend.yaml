@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+    mongodb:
+        image: mongo:6.0.4
+        # TODO: Check whether this is compatible with swarm
+        container_name: quizae-mongodb
+        # TODO: Restart policies are part of deploy
+        restart: unless-stopped
+        # TODO: Add this as external volume in swarm
+        volumes:
+            - mongo_data:/data/db
+        networks:
+            - db_access
+        environment:
+            # TODO: These should be secrets in swarm
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: root
+            MONGO_INITDB_DATABASE: quizae
+
+    backend:
+        image: ghcr.io/mareddie/quizae-backend:latest
+        # TODO: Check whether this is compatible with swarm
+        container_name: quizae-backend
+        # TODO: Restart policies are part of deploy
+        restart: unless-stopped
+        depends_on:
+            - mongodb
+        networks:
+            - db_access
+            - public
+        # TODO: These should be a part of deploy
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.backend.entrypoints=websecure
+            - traefik.http.routers.backend.rule=Host(`api.quizae.wtf`)
+            - traefik.http.routers.backend.tls=true
+        environment:
+            # TODO: These should be secrets in Swarm
+            APP_ENV: dev
+            DATABASE_URL: mongodb://root:root@quizae-mongodb/quizae
+            JWT_SECRET: 3493ab26a038b1c70a8273e75ebbc9e7
+
+networks:
+    db_access:
+        external: true
+    public:
+        external: true
