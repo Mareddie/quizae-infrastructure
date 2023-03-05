@@ -3,7 +3,6 @@ version: "3.8"
 services:
     mongodb:
         image: mongo:6.0.4
-        command: --replSet rs0
         volumes:
             - mongo_data:/data/db
         networks:
