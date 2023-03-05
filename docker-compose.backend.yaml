@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+    mongodb:
+        image: mongo:6.0.4
+        command: --replSet rs0
+        volumes:
+            - mongo_data:/data/db
+        networks:
+            - db_access
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: /run/secrets/mongoRootUsername
+            MONGO_INITDB_ROOT_PASSWORD: /run/secrets/mongoRootPassword
+            MONGO_INITDB_DATABASE: /run/secrets/mongoDefaultDatabase
+        secrets:
+            - mongoRootUsername
+            - mongoRootPassword
+            - mongoDefaultDatabase
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 10s
+                max_attempts: 5
+                window: 60s
+
+    backend:
+        image: ghcr.io/mareddie/quizae-backend:latest
+        networks:
+            - db_access
+            - public
+        environment:
+            APP_ENV: /run/secrets/backendAppEnv
+            DATABASE_URL: /run/secrets/backendDatabaseUrl
+            JWT_SECRET: /run/secrets/backendJwtSecret
+        secrets:
+            - backendAppEnv
+            - backendDatabaseUrl
+            - backendJwtSecret
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 10s
+                max_attempts: 5
+                window: 60s
+            labels:
+                - traefik.enable=true
+                - traefik.http.routers.backend.entrypoints=websecure
+                - traefik.http.routers.backend.rule=Host(`api.quizae.wtf`)
+                - traefik.http.routers.backend.tls=true
+
+networks:
+    db_access:
+        external: true
+    public:
+        external: true
+
+volumes:
+    mongo_data:
+        external: true
+
+secrets:
+    mongoRootUsername:
+        external: true
+    mongoRootPassword:
+        external: true
+    mongoDefaultDatabase:
+        external: true
+    backendAppEnv:
+        external: true
+    backendDatabaseUrl:
+        external: true
+    backendJwtSecret:
+        external: true
