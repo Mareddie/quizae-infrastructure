@@ -16,12 +16,6 @@ services:
             - mongoRootUsername
             - mongoRootPassword
             - mongoDefaultDatabase
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 10s
-                max_attempts: 5
-                window: 60s
 
     backend:
         image: ghcr.io/mareddie/quizae-backend:latest
@@ -37,11 +31,6 @@ services:
             - backendDatabaseUrl
             - backendJwtSecret
         deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 10s
-                max_attempts: 5
-                window: 60s
             labels:
                 - traefik.enable=true
                 - traefik.http.routers.backend.entrypoints=websecure
