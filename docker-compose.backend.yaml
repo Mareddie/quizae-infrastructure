@@ -29,8 +29,11 @@ services:
             labels:
                 - traefik.enable=true
                 - traefik.http.routers.backend.entrypoints=websecure
-                - traefik.http.routers.backend.rule=Host(`api.quizae.wtf`)
+                - traefik.http.routers.backend.rule=Host(`api.quizae.com`)
                 - traefik.http.routers.backend.tls=true
+                - traefik.http.routers.backend.tls.certresolver=default-resolver
+                - traefik.http.routers.backend.service=backend_backend
+                - traefik.http.services.backend.loadbalancer.server.port=3000
 
 networks:
     db_access:
