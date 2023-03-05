@@ -8,13 +8,9 @@ services:
         networks:
             - db_access
         environment:
-            MONGO_INITDB_ROOT_USERNAME: /run/secrets/mongoRootUsername
-            MONGO_INITDB_ROOT_PASSWORD: /run/secrets/mongoRootPassword
-            MONGO_INITDB_DATABASE: /run/secrets/mongoDefaultDatabase
-        secrets:
-            - mongoRootUsername
-            - mongoRootPassword
-            - mongoDefaultDatabase
+            MONGO_INITDB_ROOT_USERNAME: $MONGO_ROOT_USERNAME
+            MONGO_INITDB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
+            MONGO_INITDB_DATABASE: $MONGO_DATABASE
 
     backend:
         image: ghcr.io/mareddie/quizae-backend:latest
@@ -43,12 +39,4 @@ networks:
 
 volumes:
     mongo_data:
-        external: true
-
-secrets:
-    mongoRootUsername:
-        external: true
-    mongoRootPassword:
-        external: true
-    mongoDefaultDatabase:
         external: true
