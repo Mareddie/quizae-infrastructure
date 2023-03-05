@@ -3,46 +3,71 @@ version: "3.8"
 services:
     mongodb:
         image: mongo:6.0.4
-        # TODO: Check whether this is compatible with swarm
-        container_name: quizae-mongodb
-        # TODO: Restart policies are part of deploy
-        restart: unless-stopped
-        # TODO: Add this as external volume in swarm
+        command: --replSet rs0
         volumes:
             - mongo_data:/data/db
         networks:
             - db_access
         environment:
-            # TODO: These should be secrets in swarm
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: root
-            MONGO_INITDB_DATABASE: quizae
+            MONGO_INITDB_ROOT_USERNAME: /run/secrets/mongoRootUsername
+            MONGO_INITDB_ROOT_PASSWORD: /run/secrets/mongoRootPassword
+            MONGO_INITDB_DATABASE: /run/secrets/mongoDefaultDatabase
+        secrets:
+            - mongoRootUsername
+            - mongoRootPassword
+            - mongoDefaultDatabase
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 10s
+                max_attempts: 5
+                window: 60s
 
     backend:
         image: ghcr.io/mareddie/quizae-backend:latest
-        # TODO: Check whether this is compatible with swarm
-        container_name: quizae-backend
-        # TODO: Restart policies are part of deploy
-        restart: unless-stopped
-        depends_on:
-            - mongodb
         networks:
             - db_access
             - public
-        # TODO: These should be a part of deploy
-        labels:
-            - traefik.enable=true
-            - traefik.http.routers.backend.entrypoints=websecure
-            - traefik.http.routers.backend.rule=Host(`api.quizae.wtf`)
-            - traefik.http.routers.backend.tls=true
         environment:
-            # TODO: These should be secrets in Swarm
-            APP_ENV: dev
-            DATABASE_URL: mongodb://root:root@quizae-mongodb/quizae
-            JWT_SECRET: 3493ab26a038b1c70a8273e75ebbc9e7
+            APP_ENV: /run/secrets/backendAppEnv
+            DATABASE_URL: /run/secrets/backendDatabaseUrl
+            JWT_SECRET: /run/secrets/backendJwtSecret
+        secrets:
+            - backendAppEnv
+            - backendDatabaseUrl
+            - backendJwtSecret
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 10s
+                max_attempts: 5
+                window: 60s
+            labels:
+                - traefik.enable=true
+                - traefik.http.routers.backend.entrypoints=websecure
+                - traefik.http.routers.backend.rule=Host(`api.quizae.wtf`)
+                - traefik.http.routers.backend.tls=true
 
 networks:
     db_access:
         external: true
     public:
+        external: true
+
+volumes:
+    mongo_data:
+        external: true
+
+secrets:
+    mongoRootUsername:
+        external: true
+    mongoRootPassword:
+        external: true
+    mongoDefaultDatabase:
+        external: true
+    backendAppEnv:
+        external: true
+    backendDatabaseUrl:
+        external: true
+    backendJwtSecret:
         external: true
