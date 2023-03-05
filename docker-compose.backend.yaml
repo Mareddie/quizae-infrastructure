@@ -22,13 +22,9 @@ services:
             - db_access
             - public
         environment:
-            APP_ENV: /run/secrets/backendAppEnv
-            DATABASE_URL: /run/secrets/backendDatabaseUrl
-            JWT_SECRET: /run/secrets/backendJwtSecret
-        secrets:
-            - backendAppEnv
-            - backendDatabaseUrl
-            - backendJwtSecret
+            APP_ENV: $APP_ENV
+            DATABASE_URL: $APP_DATABASE_URL
+            JWT_SECRET: $APP_JWT_SECRET
         deploy:
             labels:
                 - traefik.enable=true
@@ -52,10 +48,4 @@ secrets:
     mongoRootPassword:
         external: true
     mongoDefaultDatabase:
-        external: true
-    backendAppEnv:
-        external: true
-    backendDatabaseUrl:
-        external: true
-    backendJwtSecret:
         external: true
