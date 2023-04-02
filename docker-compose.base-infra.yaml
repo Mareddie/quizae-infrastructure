@@ -1,10 +1,10 @@
 ### BASE ENVIRONMENT - PROXY, ORCHESTRATOR
-
 version: "3.8"
 
 services:
     traefik:
         image: traefik:v2.9
+        restart: unless-stopped
         ports:
             - "80:80"
             - "443:443"
@@ -14,85 +14,37 @@ services:
             - ./config/traefik:/etc/traefik:ro
         networks:
             - public
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.traefik.entrypoints=websecure
+            - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST}`)
+            - traefik.http.routers.traefik.tls=true
+            - traefik.http.routers.traefik.tls.certresolver=default-resolver
+            - traefik.http.routers.traefik.service=api@internal
+            - traefik.http.routers.traefik.middlewares=testing-auth@file
+            - traefik.http.services.traefik.loadbalancer.server.port=9999
         secrets:
             - basicAuthUsers
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 10s
-                max_attempts: 5
-                window: 60s
-
-            labels:
-                - traefik.enable=true
-                - traefik.http.routers.traefik.entrypoints=websecure
-                - traefik.http.routers.traefik.rule=Host(`traefik.quizae.com`)
-                - traefik.http.routers.traefik.tls=true
-                - traefik.http.routers.traefik.tls.certresolver=default-resolver
-                - traefik.http.routers.traefik.service=api@internal
-                - traefik.http.services.traefik.loadbalancer.server.port=9999
-                - traefik.http.routers.traefik.middlewares=testing-auth@file
-
-    agent:
-        image: portainer/agent:2.16.2-alpine
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - /var/lib/docker/volumes:/var/lib/docker/volumes
-        networks:
-            - agent_network
-        environment:
-            AGENT_CLUSTER_ADDR: tasks.agent
-        deploy:
-            mode: global
-            placement:
-                constraints: [ node.platform.os == linux ]
-
-            restart_policy:
-                condition: on-failure
-                delay: 10s
-                max_attempts: 5
-                window: 60s
 
     portainer:
         image: portainer/portainer-ce:2.16.2-alpine
-        command: -H tcp://tasks.agent:9001 --tlsskipverify
+        command: -H unix:///var/run/docker.sock
+        restart: unless-stopped
         volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
             - portainer_data:/data
         networks:
-            - agent_network
             - public
-        deploy:
-            mode: replicated
-            replicas: 1
-            placement:
-                constraints: [ node.role == manager ]
-
-            restart_policy:
-                condition: on-failure
-                delay: 10s
-                max_attempts: 5
-                window: 60s
-
-            labels:
-                - traefik.enable=true
-
-                # Portainer Base Service
-                - traefik.http.routers.portainer.entrypoints=websecure
-                - traefik.http.routers.portainer.rule=Host(`portainer.quizae.com`)
-                - traefik.http.routers.portainer.tls=true
-                - traefik.http.routers.portainer.tls.certresolver=default-resolver
-                - traefik.http.routers.portainer.service=portainer
-                - traefik.http.services.portainer.loadbalancer.server.port=9000
-                # Edge (disabled by default, might come in handy later)
-                # - traefik.http.routers.edge.entrypoints=websecure
-                # - traefik.http.routers.edge.rule=Host(`edge.quizae.com`)
-                # - traefik.http.routers.edge.tls=true
-                # - traefik.http.routers.edge.service=edge
-                # - traefik.http.services.edge.loadbalancer.server.port=8000
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.portainer.entrypoints=websecure
+            - traefik.http.routers.portainer.rule=Host(`${QUIZAE_HOST}`)
+            - traefik.http.routers.portainer.tls=true
+            - traefik.http.routers.portainer.tls.certresolver=default-resolver
+            - traefik.http.routers.portainer.service=portainer
+            - traefik.http.services.portainer.loadbalancer.server.port=9000
 
 networks:
-    agent_network:
-        external: true
     public:
         external: true
 
