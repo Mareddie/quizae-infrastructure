@@ -23,8 +23,6 @@ services:
             - traefik.http.routers.traefik.service=api@internal
             - traefik.http.routers.traefik.middlewares=testing-auth@file
             - traefik.http.services.traefik.loadbalancer.server.port=9999
-        secrets:
-            - basicAuthUsers
 
     portainer:
         image: portainer/portainer-ce:2.16.2-alpine
@@ -50,7 +48,3 @@ networks:
 
 volumes:
     portainer_data:
-
-secrets:
-    basicAuthUsers:
-        external: true
