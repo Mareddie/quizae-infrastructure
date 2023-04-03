@@ -1,6 +1,6 @@
-# TODO: migrate to docker instead of Swarm
 version: "3.8"
 
+# Variables used in this Compose file are handled via Portainer, hence a different syntax from base infra
 services:
     mongodb:
         image: mongo:6.0.4
@@ -22,15 +22,14 @@ services:
             APP_ENV: $APP_ENV
             DATABASE_URL: $APP_DATABASE_URL
             JWT_SECRET: $APP_JWT_SECRET
-        deploy:
-            labels:
-                - traefik.enable=true
-                - traefik.http.routers.backend.entrypoints=websecure
-                - traefik.http.routers.backend.rule=Host(`api.quizae.com`)
-                - traefik.http.routers.backend.tls=true
-                - traefik.http.routers.backend.tls.certresolver=default-resolver
-                - traefik.http.routers.backend.service=backend
-                - traefik.http.services.backend.loadbalancer.server.port=3000
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.backend.entrypoints=websecure
+            - traefik.http.routers.backend.rule=Host(`$QUIZAE_BACKEND_HOST`)
+            - traefik.http.routers.backend.tls=true
+            - traefik.http.routers.backend.tls.certresolver=default-resolver
+            - traefik.http.routers.backend.service=backend
+            - traefik.http.services.backend.loadbalancer.server.port=3000
 
 networks:
     db_access:
