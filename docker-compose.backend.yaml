@@ -4,8 +4,11 @@ version: "3.8"
 services:
     mongodb:
         image: mongo:6.0.4
+        container_name: quizae-mongodb
+        command: --replSet rs0 --keyFile /data/mongo-replica.key --bind_ip_all
         volumes:
             - mongo_data:/data/db
+            - ./config/mongo/file.key:/data/mongo-replica.key
         networks:
             - db_access
         environment:
