@@ -10,7 +10,6 @@ providers:
     docker:
         network: public
         exposedByDefault: false
-        swarmMode: true
 
 entryPoints:
     web:
