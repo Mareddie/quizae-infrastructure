@@ -2,19 +2,16 @@ version: "3.8"
 
 # Variables used in this Compose file are handled via Portainer, hence a different syntax from base infra
 services:
-    mongodb:
-        image: mongo:6.0.4
-        container_name: quizae-mongodb
-        command: --replSet rs0 --keyFile /data/mongo-replica.key --bind_ip_all
+    mysql:
+        image: mysql:8.0.32
+        container_name: quizae-mysql
         volumes:
-            - mongo_data:/data/db
-            - $MONGO_KEY_FILE_PATH:/data/mongo-replica.key
+            - mysql_data:/var/lib/mysql
         networks:
             - db_access
         environment:
-            MONGO_INITDB_ROOT_USERNAME: $MONGO_ROOT_USERNAME
-            MONGO_INITDB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
-            MONGO_INITDB_DATABASE: $MONGO_DATABASE
+            MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+            MYSQL_DATABASE: $MYSQL_DATABASE
 
     backend:
         image: ghcr.io/mareddie/quizae-backend:latest
@@ -41,5 +38,5 @@ networks:
         external: true
 
 volumes:
-    mongo_data:
+    mysql_data:
         external: true
